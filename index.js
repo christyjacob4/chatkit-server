@@ -22,8 +22,8 @@ const GithubAccessTokenFromCode = code =>
       Accept: 'application/json',
     },
     body: JSON.stringify({
-      client_id: <YOUR_GITHUB_APP_ID>,
-      client_secret:  <YOUR_GITHUB_APP_SECRET>,
+      client_id: 46953,
+      client_secret: '4f7d91eacbd2496a4c141457bb7b117a0cf25d2a',
       code,
     }),
   })
