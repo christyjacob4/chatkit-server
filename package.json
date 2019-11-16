@@ -1,17 +1,19 @@
 {
-  "name": "server",
+  "name": "chatkit-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start" : "node index.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "pusher-chatkit-server": "^0.12.0"
+    "node-fetch": "^2.6.0",
+    "pusher-chatkit-server": "^0.12.0",
+    "server": "^1.0.19"
   },
   "engines": {
     "node": "8.16.0"
