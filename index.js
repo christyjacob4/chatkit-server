@@ -1,79 +1,50 @@
-const server = require('server')
-const fetch = require('node-fetch')
-const Chatkit = require('pusher-chatkit-server')
+  require('dotenv').config({ path: '.env' });
 
-const { get, post } = server.router
-const { json, header, status, redirect } = server.reply
+    const express = require('express');
+    const bodyParser = require('body-parser');
+    const cors = require('cors');
+    const Chatkit = require('@pusher/chatkit-server');
 
-const credentials = require('./credentials.json')
-const chatkit = new Chatkit.default(credentials)
+    const app = express();
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': '*',
-  'Access-Control-Allow-Methods': '*',
-}
+    const chatkit = new Chatkit.default({
+      instanceLocator: process.env.CHATKIT_INSTANCE_LOCATOR,
+      key: process.env.CHATKIT_SECRET_KEY,
+    });
 
-const GithubAccessTokenFromCode = code =>
-  fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      client_id: 46953,
-      client_secret: '4f7d91eacbd2496a4c141457bb7b117a0cf25d2a',
-      code,
-    }),
-  })
-    .then(res => res.json())
-    .then(data => data.access_token)
-    .catch(console.log)
+    app.use(cors());
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: true }));
 
-const GithubUserFromAccessToken = token =>
-  fetch(`https://api.github.com/user?access_token=${token}`)
-    .then(res => res.json())
-    .catch(console.log)
+    app.post('/users', (req, res) => {
+      const { userId } = req.body;
 
-const ChatkitCredentialsFromGithubToken = token =>
-  GithubUserFromAccessToken(token)
-    .then(user =>
-      chatkit.authenticate({ grant_type: 'client_credentials' }, user.login)
-    )
-    .catch(console.log)
+      chatkit
+        .createUser({
+          id: userId,
+          name: userId,
+        })
+        .then(() => {
+          res.sendStatus(201);
+        })
+        .catch(err => {
+          if (err.error === 'services/chatkit/user_already_exists') {
+            console.log(`User already exists: ${userId}`);
+            res.sendStatus(200);
+          } else {
+            res.status(err.status).json(err);
+          }
+        });
+    });
 
-const CreateChatkitUserFromGithubUser = user =>
-  chatkit
-    .createUser(user.login, user.name || user.login, user.avatar_url)
-    .catch(console.log)
+    app.post('/authenticate', (req, res) => {
+      const authData = chatkit.authenticate({
+        userId: req.query.user_id,
+      });
+      res.status(authData.status).send(authData.body);
+    });
 
-server({ port: process.env.PORT || 4000, security: { csrf: false } }, [
-  ctx => header(cors),
-  post('/auth', async ctx => {
-    try {
-      const { code } = JSON.parse(ctx.data)
-      const token = await GithubAccessTokenFromCode(code)
-      const user = await GithubUserFromAccessToken(token)
-      const create = await CreateChatkitUserFromGithubUser(user)
-      return json({ id: user.login, token })
-    } catch (e) {
-      console.log(e)
-    }
-  }),
-  post('/token', async ctx => {
-    try {
-      const { token } = ctx.query
-      const creds = await ChatkitCredentialsFromGithubToken(token)
-      return json(creds)
-    } catch (e) {
-      console.log(e)
-    }
-  }),
-  get('/success', async ctx => {
-    const prod = 'https://pusher.github.io/chatkit-demo'
-    const { code, state, url } = ctx.query
-    return redirect(302, `${url || prod}?code=${code}&state=${state}`)
-  }),
-  get(ctx => status(404)),
-])
+    app.set('port', process.env.PORT || 5200);
+    const server = app.listen(app.get('port'), () => {
+      console.log(`Express running → PORT ${server.address().port}`);
+    });
