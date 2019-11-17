@@ -8,8 +8,8 @@
     const app = express();
 
     const chatkit = new Chatkit.default({
-      instanceLocator: process.env.CHATKIT_INSTANCE_LOCATOR,
-      key: process.env.CHATKIT_SECRET_KEY,
+      instanceLocator: "v1:us1:56165286-1172-4484-9d35-1e8bb8d98038",
+      key: "44cc9003-f25c-4f2e-afb5-30d6fe0e2846:RuLQQx9hvL/Sd8Z/0nzCyLC99YeoQDfrBGINirKc9os=",
     });
 
     app.use(cors());
