@@ -35,7 +35,7 @@
             res.status(err.status).json(err);
           }
         });
-    });
+    }); 
 
     app.post('/authenticate', (req, res) => {
       const authData = chatkit.authenticate({
