@@ -16,11 +16,11 @@
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-    app.get('/'. (req, res)=>{
+    app.get('/', (req, res)=>{
       res.json({
         "message" : "It's working"
       })
-    })
+    });
 
     app.post('/users', (req, res) => {
       const { userId } = req.body;
