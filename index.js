@@ -16,6 +16,12 @@
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
+    app.get('/'. (req, res)=>{
+      res.json({
+        "message" : "It's working"
+      })
+    })
+
     app.post('/users', (req, res) => {
       const { userId } = req.body;
 
@@ -44,7 +50,7 @@
       res.status(authData.status).send(authData.body);
     });
 
-    app.set('port', 5200);
+    app.set('port', process.env.PORT || 5200);
     const server = app.listen(app.get('port'), () => {
       console.log(`Express running → PORT ${server.address().port}`);
     });
